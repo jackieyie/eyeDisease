@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>眼科知识科普 - 3/3</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <!-- Side Decorations -->
+   <div class="side-decoration left">
+    <span class="grid-bg"></span> <span class="pulse-circle-1"></span> <span class="pulse-circle-2"></span>
+    <span class="line-frame-1"></span> <span class="line-frame-2"></span> <span class="accent-shape"></span>
+  </div>
+  <div class="side-decoration right">
+    <span class="glow-bg"></span> <span class="bar-1"></span> <span class="bar-2"></span> <span class="bar-3"></span>
+    <span class="circuit-line-1"></span> <span class="circuit-line-2"></span> <span class="triangle-accent"></span>
+  </div>
+  <!-- End Side Decorations -->
+
+  <div class="container">
+    <h1>了解常见眼疾 (二)</h1>
+    <div class="intro-content" style="text-align: left; padding-left: 20px; padding-right: 20px;"> <!-- 内容稍微左对齐 -->
+        <h2 style="text-align: center; color: var(--primary-dark);">糖尿病视网膜病变 (Diabetic Retinopathy)</h2>
+        <p>这是糖尿病的常见并发症，高血糖水平会损害视网膜（眼后部的感光组织）的血管。早期可能无症状，但随着病情发展可能导致视力模糊、漂浮物增多甚至失明。糖尿病患者应每年至少进行一次全面的眼底检查。</p>
+
+        <h2 style="text-align: center; color: var(--primary-dark); margin-top: 25px;">年龄相关性黄斑变性 (AMD)</h2>
+        <p>AMD 影响黄斑区，这是视网膜中心负责精细视觉（如阅读和识别人脸）的部分。它主要影响老年人，分为“干性”和“湿性”两种类型。AMD 会导致中央视力模糊或扭曲，但通常不影响周边视力。</p>
+
+        <h2 style="text-align: center; color: var(--primary-dark); margin-top: 25px;">高血压与近视的影响</h2>
+        <p>长期未控制的<strong>高血压</strong>也可能损害视网膜血管，引起高血压视网膜病变。而高度<strong>近视</strong>（通常指超过600度）则可能增加视网膜脱离、黄斑病变和青光眼的风险。</p>
+
+        <p style="text-align: center; margin-top: 20px;">现在，您可以进入应用，上传图像以获取基于相似度的分析参考。</p>
+    </div>
+     <div style="text-align: center;"> <!-- 按钮居中容器 -->
+        <!-- 返回按钮 -->
+        <a href="{{ url_for('intro2') }}" class="nav-button secondary">返回上一页</a>
+        <!-- 进入应用按钮 (可以加上 primary-action 样式让它更突出) -->
+        <a href="{{ url_for('main_app') }}" class="nav-button primary-action">进入应用进行识别</a>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>眼科图像识别</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <!-- Side Decorations -->
+  <div class="side-decoration left">
+    <span class="grid-bg"></span> <span class="pulse-circle-1"></span> <span class="pulse-circle-2"></span>
+    <span class="line-frame-1"></span> <span class="line-frame-2"></span> <span class="accent-shape"></span>
+  </div>
+  <div class="side-decoration right">
+    <span class="glow-bg"></span> <span class="bar-1"></span> <span class="bar-2"></span> <span class="bar-3"></span>
+    <span class="circuit-line-1"></span> <span class="circuit-line-2"></span> <span class="triangle-accent"></span>
+  </div>
+  <!-- End Side Decorations -->
+
+  <div class="container">
+    <h1>眼科图像识别</h1>
+    <p class="subtitle">上传眼底图像进行相似度分析</p>
+
+    <!-- Flash 消息显示 -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          {% set border_color_var = '--' + (category if category in ['error', 'warning', 'success'] else 'secondary') %}
+          <div class="result {{ category if category else 'info' }}" style="margin-bottom: 20px; border-left-color: var({{ border_color_var }}, var(--secondary));">
+            <p>{{ message }}</p>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- 文件上传表单 -->
+    <form method="post" action="{{ url_for('upload_file') }}" enctype="multipart/form-data" class="form-section">
+      <label for="file">选择图像文件 ({{ config.ALLOWED_EXTENSIONS|join(', ') }})</label>
+      <input type="file" id="file" name="file" accept="image/*" required />
+      <button type="submit">开始识别</button>
+    </form>
+
+    <!-- 新增：返回按钮 -->
+    <div style="text-align: center; margin-top: 15px;">
+        <a href="{{ url_for('intro3') }}" class="nav-button secondary">返回知识科普</a>
+    </div>
+    <!-- 返回按钮结束 -->
+
+
+    <!-- 结果显示区域 -->
+    <div id="result-area" style="margin-top: 25px;"> {# 稍微增加结果区域的上边距 #}
+        {% if has_result %}
+            {# Case 1: 分析失败或无法比较 (score < 0) - 使用默认样式，但将提示语加粗 #}
+            {% if result_score is not none and result_score < 0 %}
+                <div class="result"> {# 保持默认样式 #}
+                    <h2>分析提示</h2>
+                    <p><strong>{{ result_disease }}</strong></p> {# 显示随机短语 #}
+                    <p class="disclaimer">
+                        <strong>免责声明:</strong><br>
+                        本结果仅基于图像相似度计算，非专业医疗诊断，仅供学习和参考。如有眼部不适请务必咨询专业医生。
+                    </p>
+                </div>
+            {# Case 2: 分析成功 (score >= 0) #}
+            {% elif result_score is not none and result_score >= 0 %}
+                 <div class="result {% if result_disease == '其他' %}warning{% endif %}">
+                    <h2>识别分析结果</h2>
+                    <p>上传文件: {{ uploaded_filename }}</p>
+                    <p>最相似类别: <strong>{{ result_disease }}</strong></p>
+                    <p>最高相似度 (SSIM): {{ "%.4f"|format(result_score) }}</p>
+                    {% if result_disease == '其他' %}
+                    <p><small>(备注：所有可比较类别的相似度均低于阈值 {{ threshold }})</small></p>
+                    {% endif %}
+                    <p class="disclaimer">
+                        <strong>免责声明:</strong><br>
+                        本结果仅基于图像相似度计算，非专业医疗诊断，仅供学习和参考。如有眼部不适请务必咨询专业医生。
+                    </p>
+                 </div>
+            {% endif %}
+        {% endif %}
+
+        {# Case 3: 后端处理过程中发生错误 (error_message 存在) #}
+        {% if error_message %}
+        <div class="result error">
+          <h2>处理错误</h2>
+          <p>{{ error_message }}</p>
+           <p class="disclaimer">
+              <strong>免责声明:</strong><br>
+              本结果仅基于图像相似度计算，非专业医疗诊断，仅供学习和参考。如有眼部不适请务必咨询专业医生。
+          </p>
+        </div>
+        {% endif %}
+    </div> <!-- End result-area -->
+
+  </div> <!-- End container -->
+
+</body>
+</html>
