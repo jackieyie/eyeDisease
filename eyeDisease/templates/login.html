@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>登录 - 眼科图像识别</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+    <!-- 链接到共享 CSS 文件 -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* 登录页面的特定样式 */
+        .login-container {
+            /* 确保登录框在装饰元素之上 */
+            position: relative;
+            z-index: 1;
+        }
+        .login-form {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            max-width: 400px; /* 控制登录框宽度 */
+            margin: auto; /* 居中 */
+            opacity: 0;
+            transform: translateY(15px);
+            animation: fadeInSlideUp 0.7s 0.1s ease-out forwards; /* 复用入场动画 */
+        }
+        .login-form h1 {
+            font-size: 1.8em; /* 调整标题大小 */
+            margin-bottom: 25px;
+            color: var(--primary);
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.95em;
+            color: var(--text);
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--card-bg);
+            color: var(--text);
+            font-size: 1em;
+            box-sizing: border-box;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+        }
+        .button-group {
+            display: flex;
+            gap: 15px; /* 按钮间距 */
+            margin-top: 30px;
+        }
+        /* 复用 .nav-button 样式，或定义新的 button 样式 */
+        .login-button, .register-button {
+            flex-grow: 1; /* 让按钮平分宽度 */
+            padding: 12px 15px;
+            font-size: 1.05em;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            color: #ffffff;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            transition: transform 0.15s ease-out, box-shadow 0.2s ease-out, filter 0.2s ease;
+            box-shadow: var(--shadow-sm);
+        }
+        .login-button {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 .3rem .6rem rgba(0, 123, 255, .3);
+            filter: brightness(1.05);
+        }
+        .register-button {
+            background: var(--input-bg);
+            color: var(--text);
+        }
+        .register-button:hover {
+             background: #d3d9df;
+             box-shadow: var(--shadow-sm);
+             filter: brightness(1);
+        }
+
+    </style>
+</head>
+<body>
+    <!-- 侧边装饰 (保持不变) -->
+    <div class="side-decoration left">
+        <span class="grid-bg"></span><span class="pulse-circle-1"></span><span class="pulse-circle-2"></span>
+        <span class="line-frame-1"></span><span class="line-frame-2"></span><span class="accent-shape"></span>
+    </div>
+    <div class="side-decoration right">
+        <span class="glow-bg"></span><span class="bar-1"></span><span class="bar-2"></span><span class="bar-3"></span>
+        <span class="circuit-line-1"></span><span class="circuit-line-2"></span><span class="triangle-accent"></span>
+    </div>
+
+    <div class="login-container">
+        <div class="login-form">
+            <h1>用户登录</h1>
+            <!-- Note: This form doesn't actually submit data, it uses JS for navigation -->
+            <form id="fake-login-form" onsubmit="return false;"> <!-- Added onsubmit="return false;" to prevent default form submission -->
+                <div class="form-group">
+                    <label for="username">用户名</label>
+                    <input type="text" id="username" name="username" placeholder="请输入用户名"> <!-- Removed required for simplicity -->
+                </div>
+                <div class="form-group">
+                    <label for="password">密码</label>
+                    <input type="password" id="password" name="password" placeholder="请输入密码"> <!-- Removed required for simplicity -->
+                </div>
+                <div class="button-group">
+                    <!-- Changed type to "button" to prevent accidental form submission -->
+                    <button type="button" id="login-btn" class="login-button">登 录</button>
+                    <button type="button" id="register-btn" class="register-button">注 册</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 跳转到第一个介绍页
+        document.getElementById('login-btn').addEventListener('click', function() {
+            // 这里不做任何验证，直接跳转到 intro1
+            console.log('跳转到介绍页 1...');
+            // *** CORRECTION HERE ***
+            window.location.href = "{{ url_for('show_intro1') }}"; // Use the correct function name
+        });
+
+        document.getElementById('register-btn').addEventListener('click', function() {
+            // 注册按钮也跳转到 intro1
+            console.log('注册功能占位，跳转到介绍页 1...');
+            // alert('注册功能尚未开放，将跳转到介绍页。'); // Optional alert
+            // *** CORRECTION HERE ***
+            window.location.href = "{{ url_for('show_intro1') }}"; // Use the correct function name
+        });
+
+         // 添加之前的动画 @keyframes (确保动画效果存在)
+         // 如果已经放在 style.css 就不用加了
+         const keyframesStyle = document.createElement('style');
+         keyframesStyle.innerHTML = `
+            @keyframes fadeInSlideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+            /* Include other necessary keyframes if they are not in style.css */
+         `;
+         document.head.appendChild(keyframesStyle);
+
+    </script>
+
+</body>
+</html>
