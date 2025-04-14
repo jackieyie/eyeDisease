@@ -59,7 +59,7 @@
 
     <!-- 返回按钮 -->
     <div style="text-align: center; margin-top: 15px;">
-        <a href="{{ url_for('intro3') }}" class="nav-button secondary">返回知识科普</a>
+        <a href="{{ url_for('show_intro3') }}" class="nav-button secondary">返回知识科普</a>
     </div>
 
     <!-- 结果显示区域 -->
@@ -101,7 +101,7 @@
              {# --- 图表区域 (无论上面结果如何，只要有概率数据就显示) --- #}
             {% if probabilities %}
             <div id="chart-container">
-                <h3>各类别相似度参考（随机生成演示）</h3>
+                <h3>各类别相似度参考</h3>
                 <canvas id="probabilityChart"></canvas>
             </div>
             {% endif %}
@@ -147,7 +147,7 @@
                   data: {
                       labels: labels,
                       datasets: [{
-                          label: '相似度 (演示)',
+                          label: '相似度',
                           data: dataValues,
                           backgroundColor: backgroundColors.slice(0, labels.length),
                           borderColor: borderColors.slice(0, labels.length),
