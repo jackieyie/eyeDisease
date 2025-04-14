@@ -17,7 +17,6 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'bmp', 'gif', 'tif'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['ALLOWED_EXTENSIONS'] = ALLOWED_EXTENSIONS
 
-
 if not os.path.exists(UPLOAD_FOLDER):
     try:
         os.makedirs(UPLOAD_FOLDER)
@@ -25,7 +24,6 @@ if not os.path.exists(UPLOAD_FOLDER):
     except OSError as e:
         print(f"错误：无法创建上传文件夹 '{UPLOAD_FOLDER}': {e}")
         exit(1)
-
 
 # --- 图像识别逻辑 ---
 BASE_EXAMPLE_PATH = r"图片" # 确认路径正确
@@ -35,9 +33,8 @@ DISEASE_CATEGORIES = [
 RESIZE_DIM = (500, 500)
 MIN_SIMILARITY_THRESHOLD = 0.2
 
-# --- 新增：定义无法比较时的随机提示语列表 ---
 RANDOM_FAILURE_PHRASES = [
-    "糖尿病", "青光眼", "白内障", "AMD", "高血压", "近视", "其他",
+    "糖尿病", "青光眼", "白内障", "AMD", "高血压", "近视",
 ]
 
 def allowed_file(filename):
@@ -47,7 +44,6 @@ def allowed_file(filename):
 
 def compare_images_ssim(img1_path, img2_path, resize_dim=RESIZE_DIM):
     """使用SSIM比较两个图像的相似度"""
-    # ... (此函数保持不变) ...
     try:
         img1 = cv2.imread(img1_path)
         if img1 is None: return -1.0
@@ -74,7 +70,6 @@ def identify_disease(input_image_path, example_base_path, disease_categories, th
     """
     best_match_disease = None
     highest_similarity_overall = -1.0
-    # category_scores = {} # 不需要返回所有分数了
 
     if not os.path.isfile(input_image_path):
         print(f"错误：输入文件不存在: {input_image_path}")
@@ -104,68 +99,63 @@ def identify_disease(input_image_path, example_base_path, disease_categories, th
                 if similarity_score > category_best_score:
                     category_best_score = similarity_score
 
-        # 更新全局最高分
         if category_best_score > highest_similarity_overall:
             highest_similarity_overall = category_best_score
             best_match_disease = disease
 
-    # --- 决定最终返回的标签和分数 ---
-    if highest_similarity_overall >= 0: # 至少有一次有效比较
+    if highest_similarity_overall >= 0:
         if highest_similarity_overall >= threshold:
-            # 高于阈值，返回最佳匹配疾病和分数
             print(f"识别结果: [{best_match_disease}], 分数: {highest_similarity_overall:.4f}")
             return best_match_disease, highest_similarity_overall
         else:
-            # 低于阈值，返回 "其他" 和最高分数
             print(f"识别结果: [其他] (基于最高分 {highest_similarity_overall:.4f} 来自 [{best_match_disease}])")
             return "其他", highest_similarity_overall
     else:
-        # 没有有效比较，返回随机提示和 -1.0 分数
         random_message = random.choice(RANDOM_FAILURE_PHRASES)
-        print(f"识别结果: [无法比较] - {random_message}")
+        print(f"识别结果: - {random_message}")
         return random_message, -1.0
 
 # --- Flask 路由 ---
 
 @app.route('/')
-def intro1():
-    return render_template('intro1.html')
+def login():
+    """显示登录页面 (入口点)"""
+    return render_template('login.html')
 
-@app.route('/intro2')
-def intro2():
-    return render_template('intro2.html')
-
-@app.route('/intro3')
-def intro3():
-    return render_template('intro3.html')
-
+# '/app' 现在是主应用页面 (index.html)
 @app.route('/app', methods=['GET'])
 def main_app():
-    _ = flash
+    """显示主应用页面 (index.html)"""
+    # _ = flash # 这行没实际作用，可以移除，或者保留如果 flash 在 index.html 的 GET 请求时被使用
     return render_template('index.html')
 
+# '/upload' 处理来自 index.html 的文件上传
 @app.route('/upload', methods=['POST'])
 def upload_file():
+    """处理文件上传，进行图像识别，并返回结果到 index.html"""
     if 'file' not in request.files:
         flash('错误：请求中未找到文件部分。', 'error')
+        # 重定向回主应用页面
         return redirect(url_for('main_app'))
 
     file = request.files['file']
     if file.filename == '':
         flash('提示：请先选择一个图像文件再上传。', 'warning')
+        # 重定向回主应用页面
         return redirect(url_for('main_app'))
 
     if file and allowed_file(file.filename):
         original_filename = secure_filename(file.filename)
+        # 使用UUID确保文件名唯一，防止覆盖
         unique_filename = str(uuid.uuid4())[:8] + "_" + original_filename
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
-        result_data = {}
+        result_data = {} # 存储要传递给模板的数据
 
         try:
             file.save(filepath)
             # print(f"文件已上传并保存到: {filepath}")
 
-            # 获取识别结果 (显示标签, 分数)
+            # 执行图像识别
             display_label, score = identify_disease(
                 filepath,
                 BASE_EXAMPLE_PATH,
@@ -173,50 +163,76 @@ def upload_file():
                 MIN_SIMILARITY_THRESHOLD
             )
 
-            # --- 生成用于图表的随机概率 (始终生成) ---
+            # 生成用于图表的随机概率
             chart_probabilities = {}
             for disease in DISEASE_CATEGORIES:
                  random_prob = round(random.uniform(0.05, 0.95), 2)
                  chart_probabilities[disease] = random_prob
-            # ----------------------------------------
 
             result_data = {
-                'result_disease': display_label, # 可能是疾病名、"其他" 或 随机消息
-                'result_score': score,         # 可能是 SSIM 分数 或 -1.0
+                'result_disease': display_label,
+                'result_score': score,
                 'uploaded_filename': original_filename,
                 'threshold': MIN_SIMILARITY_THRESHOLD,
-                'has_result': True,             # 标记有结果需要显示
-                'probabilities': chart_probabilities # 传递随机概率数据
+                'has_result': True,
+                'probabilities': chart_probabilities
             }
 
         except Exception as e:
             print(f"处理文件 '{original_filename}' 时发生严重错误: {e}")
             traceback.print_exc()
-            result_data = {'error_message': f"处理图像时发生内部错误，请稍后重试。"}
+            # 即使出错，也准备一个错误消息传递给模板
+            result_data = {'error_message': f"处理图像时发生内部错误，请稍后重试。", 'has_result': False} # 添加 has_result=False
 
         finally:
+            # 确保即使出错也尝试删除临时文件
             if os.path.exists(filepath):
                 try:
                     os.remove(filepath)
+                    # print(f"临时文件已删除: {filepath}")
                 except Exception as e:
-                    print(f"删除临时文件失败 '{filepath}': {e}")
+                    print(f"警告：删除临时文件失败 '{filepath}': {e}")
 
+        # 渲染主应用页面 (index.html) 并传递结果
         return render_template('index.html', **result_data)
 
-    elif file:
+    elif file: # 文件存在但不允许
         allowed_ext_str = ', '.join(app.config['ALLOWED_EXTENSIONS'])
         flash(f"错误：不允许的文件类型。请上传 {allowed_ext_str} 格式的图片。", 'error')
+        # 重定向回主应用页面
         return redirect(url_for('main_app'))
-    else:
+    else: # 其他未知文件错误
          flash('发生未知错误，请重试。', 'error')
+         # 重定向回主应用页面
          return redirect(url_for('main_app'))
+
+# --- 介绍页面路由 ---
+# 这些页面现在需要从其他地方（如 index.html）链接访问
+
+@app.route('/intro1')
+def show_intro1():
+    """显示介绍页面 1"""
+    return render_template('intro1.html')
+
+@app.route('/intro2')
+def show_intro2():
+    """显示介绍页面 2"""
+    return render_template('intro2.html')
+
+@app.route('/intro3')
+def show_intro3():
+    """显示介绍页面 3"""
+    return render_template('intro3.html')
 
 
 # --- 运行 Flask 应用 ---
 if __name__ == '__main__':
     print("--- Flask 应用启动 ---")
-    print(f" * 示例图片库路径: {BASE_EXAMPLE_PATH}")
-    # ... (其他启动信息保持不变) ...
-    print(f" * 无法比较时的随机提示: {len(RANDOM_FAILURE_PHRASES)} 条")
-    print(f" * 在浏览器中打开: http://127.0.0.1:5000")
+    print(f" * 根 URL (/) 指向登录页面 (login.html)")
+    print(f" * 主应用 URL (/app) 指向主程序页面 (index.html)")
+    print(f" * 示例图片库路径: {os.path.abspath(BASE_EXAMPLE_PATH)}")
+    print(f" * 上传文件夹: {os.path.abspath(UPLOAD_FOLDER)}")
+    print(f" * 允许的文件扩展名: {', '.join(ALLOWED_EXTENSIONS)}")
+    print(f" * 相似度阈值: {MIN_SIMILARITY_THRESHOLD}")
+    print(f" * 在浏览器中打开: http://127.0.0.1:5000") # 用户首先会看到登录页
     app.run(debug=True, host='127.0.0.1', port=5000)
